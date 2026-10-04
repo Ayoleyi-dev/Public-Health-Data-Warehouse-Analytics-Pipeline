@@ -1,8 +1,8 @@
-# Data-quality checks
+# Data-quality checks I run
 
-Run these checks after `healthcare_pipeline_v2.sql`. A healthy synthetic build should return zero rows for the exception queries and the expected row counts shown below.
+I run these checks after `healthcare_pipeline_v2.sql`. A healthy synthetic build should return the expected row counts and no rows from the exception queries.
 
-## Expected row counts
+## Row counts I expect
 
 ```sql
 SELECT 'Patients' AS table_name, COUNT(*) AS row_count FROM Patients
@@ -11,9 +11,9 @@ UNION ALL SELECT 'Disease_Table', COUNT(*) FROM Disease_Table
 UNION ALL SELECT 'Consultations', COUNT(*) FROM Consultations;
 ```
 
-Expected counts: 100 patients, 20 staff members, 5 diseases and 200 consultations.
+I expect 100 patients, 20 staff members, 5 diseases and 200 consultations.
 
-## Null and duplicate checks
+## Null and duplicate checks I run
 
 ```sql
 SELECT * FROM Patients
@@ -28,7 +28,9 @@ GROUP BY EMAIL
 HAVING COUNT(*) > 1;
 ```
 
-## Relationship and date checks
+I expect both queries to return no rows.
+
+## Relationship and date checks I run
 
 ```sql
 SELECT C.*
@@ -46,7 +48,9 @@ WHERE [ADMISSION DATE] IS NULL
    OR [Total cost] < 0;
 ```
 
-## Range checks
+I use the first query to find orphaned foreign keys and the second to find invalid consultation records. I expect both to return no rows.
+
+## Range checks I run
 
 ```sql
 SELECT * FROM Patients
@@ -57,4 +61,6 @@ SELECT * FROM Disease_Table
 WHERE SEVERITY NOT IN ('Low', 'Moderate', 'Critical');
 ```
 
-These checks are intentionally written as readable SQL so they can be used during a code review or adapted into automated tests later.
+I use these checks to catch invalid demographic values and unexpected severity labels before I refresh the dashboard.
+
+I wrote the checks as readable SQL so I can use them during a code review and later adapt them into automated tests.
