@@ -2,14 +2,14 @@
     Public Health Data Warehouse & Analytics Pipeline
     Version 2 - reproducible synthetic SQL Server build
 
-    Purpose:
-      * Create the project tables when they do not exist.
-      * Rebuild deterministic synthetic data for local development.
-      * Enforce basic data-quality and referential-integrity rules.
-      * Expose a reporting view and a validated patient-intake procedure.
+    What I use this script for:
+      * I create the project tables when they do not exist.
+      * I rebuild deterministic synthetic data for local development.
+      * I enforce basic data-quality and referential-integrity rules.
+      * I expose a reporting view and a validated patient-intake procedure.
 
-    This script is intentionally destructive for the four project tables.
-    Use it only with synthetic development data.
+    I intentionally clear the four project tables in this script.
+    I use it only with synthetic development data.
 */
 
 USE [HEALTHCARE ANALYSIS REPORT];
@@ -78,7 +78,7 @@ BEGIN
 END;
 GO
 
-/* Rebuild order follows the foreign-key dependencies. */
+/* I rebuild the tables in foreign-key dependency order. */
 BEGIN TRANSACTION;
 
 DELETE FROM dbo.Consultations;
@@ -200,7 +200,7 @@ BEGIN
 END;
 GO
 
-/* Final build summary */
+/* I finish with a build summary. */
 SELECT 'Patients' AS [Table], COUNT(*) AS [Rows] FROM dbo.Patients
 UNION ALL SELECT 'Staff_Table', COUNT(*) FROM dbo.Staff_Table
 UNION ALL SELECT 'Disease_Table', COUNT(*) FROM dbo.Disease_Table
