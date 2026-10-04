@@ -1,19 +1,24 @@
 # Public Health Data Warehouse & Analytics Pipeline
 
-This project demonstrates an end-to-end healthcare analytics workflow using synthetic data: a relational SQL Server warehouse, repeatable T-SQL data generation and validation, and a Power BI reporting layer.
+I built this project to show how I can take a healthcare reporting problem, model the data in SQL Server, validate the records and present the results in Power BI. I used synthetic records for patients, staff, diseases and consultations so I could demonstrate the workflow without exposing real patient information.
 
-> **Data notice:** All patient, staff, disease and consultation records in this repository are synthetic. They do not represent real patients or clinical outcomes.
+> **Data notice:** I generated every patient, staff, disease and consultation record in this repository for demonstration. The data does not represent real patients or clinical outcomes.
 
 ![Power BI dashboard preview](Screenshot%202025-11-20%20105745.png)
 
-## What this project demonstrates
+## Why I built it
 
-- Designing a simple star-schema-style healthcare model.
-- Loading reproducible synthetic dimension and fact data with T-SQL.
-- Enforcing relationships and business rules with keys and constraints.
-- Running data-quality checks for nulls, duplicate emails, invalid dates and orphan records.
-- Producing operational and financial metrics for Power BI.
-- Translating a biochemistry background into a healthcare and laboratory-data context.
+I wanted to answer a practical public-health reporting problem. A healthcare organisation needs a reliable way to connect patient information, disease categories, staff assignments, admissions and costs. I created this warehouse to make those relationships queryable and to give a reporting user a clear view of activity, cost and trends.
+
+## What I built
+
+- I designed a relational model with one consultation fact table and three reference tables.
+- I generated a repeatable synthetic dataset with T-SQL.
+- I added primary keys, foreign keys, uniqueness rules, range checks and date checks.
+- I wrote data-quality queries for nulls, duplicate emails, orphan records, invalid dates and invalid ranges.
+- I created a financial reporting view for disease-level consultation volume, cost and average stay.
+- I added a validated patient-intake stored procedure.
+- I connected the model to a Power BI dashboard for KPI and trend reporting.
 
 ## Architecture
 
@@ -25,80 +30,88 @@ Disease_Table ──┘
                          └──> Power BI dashboard
 ```
 
-`Consultations` is the fact table. `Patients`, `Staff_Table` and `Disease_Table` are reference dimensions. The model records admissions, discharge dates, disease categories, assigned staff and consultation cost.
+I use `Consultations` as the fact table. I use `Patients`, `Staff_Table` and `Disease_Table` as reference dimensions. I record admission dates, discharge dates, disease categories, assigned staff and consultation cost in the fact table.
 
-| Layer | Implementation | Purpose |
+| Layer | What I implemented | Why I included it |
 |---|---|---|
-| Source / generation | T-SQL synthetic records | Repeatable development data |
-| Warehouse | SQL Server tables and foreign keys | Structured, queryable storage |
-| Quality layer | SQL checks and reporting views | Detect bad or inconsistent records |
-| Reporting | Power BI Desktop (`HEALTHCARE ANALYSIS ISUALIZATION.pbix`) | KPI and trend analysis |
+| Data generation | T-SQL synthetic records | I can recreate the same development dataset |
+| Warehouse | SQL Server tables and foreign keys | I can query structured and related records |
+| Quality layer | SQL checks and a reporting view | I can detect bad records before reporting |
+| Reporting | Power BI Desktop | I can communicate KPIs and trends visually |
 
 ## Repository guide
 
-| File | Description |
+| File | What I use it for |
 |---|---|
-| `healthcare_pipeline_v2.sql` | Clean, rerunnable SQL Server build and seed script |
-| `healthcare-script.sql` | Original exploratory script retained for reference |
-| `DATA_DICTIONARY.md` | Table, column and metric definitions |
-| `VALIDATION_CHECKS.md` | Data-quality checks and expected outcomes |
-| `HEALTHCARE ANALYSIS ISUALIZATION.pbix` | Power BI report |
-| `Screenshot 2025-11-20 105745.png` | Dashboard preview |
-| `Screenshot 2025-11-20 105851.png` | Relationship diagram |
+| `healthcare_pipeline_v2.sql` | I use this as the clean SQL Server build and seed script |
+| `healthcare-script.sql` | I retain this as my original exploratory script |
+| `DATA_DICTIONARY.md` | I document my tables, columns and metrics here |
+| `VALIDATION_CHECKS.md` | I document the quality checks I run here |
+| `CASE_STUDY.md` | I explain my problem, process, findings and decisions here |
+| `HEALTHCARE ANALYSIS ISUALIZATION.pbix` | I use this Power BI report for visual analysis |
+| `Screenshot 2025-11-20 105745.png` | I use this as the dashboard preview |
+| `Screenshot 2025-11-20 105851.png` | I use this as the relationship diagram |
 
-## Key questions answered
+## Questions I answer
 
-The dashboard supports questions such as:
+With this model and dashboard, I answer questions such as:
 
-1. How many consultations were recorded, and what was the total cost?
-2. Which diseases generate the greatest consultation volume and revenue?
-3. How does average length of stay vary by disease and severity?
-4. How are admissions distributed across months and pathogen categories?
-5. Are there invalid, incomplete or referentially inconsistent records?
+1. How many consultations did I record, and what was the total cost?
+2. Which disease categories produced the greatest consultation volume and recorded cost?
+3. How did average length of stay vary across disease categories and severity levels?
+4. How did admissions change across months and pathogen categories?
+5. Did I have incomplete, invalid or referentially inconsistent records before reporting?
 
-The current synthetic dashboard shows 200 consultations and approximately ₦6.28 million in total recorded consultation cost. These figures are generated examples and should not be interpreted as real public-health statistics.
+In my current synthetic dashboard, I display 200 consultations and approximately ₦6.28 million in recorded consultation cost. I treat these as generated demonstration figures rather than real public-health statistics.
 
-## Run the project
+## How I run the project
 
-### Requirements
+### Requirements I use
 
 - SQL Server or SQL Server Express
 - SQL Server Management Studio or Azure Data Studio
-- Power BI Desktop (optional, for the report)
+- Power BI Desktop for the dashboard
 
-### Steps
+### My setup process
 
-1. Create an empty database named `HEALTHCARE ANALYSIS REPORT`.
-2. Open `healthcare_pipeline_v2.sql` in SSMS and run it against that database.
-3. Run the queries in `VALIDATION_CHECKS.md` and confirm that the checks return zero quality exceptions.
-4. Open the PBIX file in Power BI Desktop.
-5. If Power BI requests a connection, update the SQL Server data source to your local instance and refresh.
+1. I create an empty database named `HEALTHCARE ANALYSIS REPORT`.
+2. I open `healthcare_pipeline_v2.sql` in SSMS and run it against that database.
+3. I run the queries in `VALIDATION_CHECKS.md` and confirm that the exception queries return no rows.
+4. I open the PBIX file in Power BI Desktop.
+5. I update the SQL Server data source to my local instance and refresh the report when Power BI requests a connection.
 
-The build script is intended for synthetic development data. It clears and reseeds the four project tables, so do not run it against production data.
+I use the build script only for synthetic development data because it clears and reseeds the four project tables.
 
-## Biochemistry and laboratory-data relevance
+## How I connect it to my degree
 
-The same modelling pattern can support a laboratory information workflow:
+As a Biochemistry undergraduate, I designed this project around the same data relationships that appear in laboratory information systems. I can map the healthcare entities to laboratory and computational biology entities:
 
-| Healthcare model | Laboratory / computational analogue |
+| Healthcare model | Laboratory or computational analogue |
 |---|---|
 | `Patients` | Samples or biological sources |
 | `Staff_Table` | Analysts, researchers or laboratory technicians |
 | `Disease_Table` | Targets, biomarkers or variant categories |
 | `Consultations` | Assays, runs or sample-level measurements |
 
-This connection is useful for healthcare analytics, LIMS reporting and biomedical data roles because it combines domain understanding with SQL, data-quality and dashboard skills.
+This connection helps me present a credible route into healthcare analytics, LIMS reporting and biomedical data work. I combine domain knowledge from biochemistry with SQL, data-quality controls and dashboard development.
 
-## Limitations and next improvements
+## Limitations I documented
 
-- The records are synthetic and generated for demonstration.
-- The current model does not include a proper date dimension or clinical outcomes.
-- The PBIX report is a desktop artifact; the SQL and documentation are the reproducible parts of the project.
-- Future work could add PostgreSQL compatibility, a date dimension, automated tests in CI and a documented Power BI semantic model.
+- I generated the records synthetically for demonstration.
+- I have not added a full date dimension or clinical outcomes yet.
+- I treat the PBIX file as a desktop reporting artifact; the SQL and documentation contain the reproducible workflow.
+- I have not executed SQL Server or Power BI inside this workspace, so I have verified the SQL structure and logic here and left application execution for a SQL Server environment.
 
-## Author
+## Improvements I plan to make next
 
-**Ayoleyi Gbenga-Ayodeji Marvelous** — Biochemistry undergraduate and Data & Analytics Officer.
+- I plan to add a proper date dimension and reusable calendar measures.
+- I plan to add PostgreSQL-compatible pipeline code for junior data-engineering roles.
+- I plan to add automated SQL checks in continuous integration.
+- I plan to document the Power BI semantic model and refresh process in more detail.
+
+## About me
+
+I am **Ayoleyi Gbenga-Ayodeji Marvelous**, a Biochemistry undergraduate, Data & Analytics Officer and aspiring healthcare data professional.
 
 - Portfolio: <https://ayoleyi-portfolio.vercel.app/>
 - GitHub: <https://github.com/Ayoleyi-dev>
