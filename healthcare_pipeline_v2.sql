@@ -482,7 +482,7 @@ BEGIN
     SELECT CONVERT(int,SCOPE_IDENTITY()) AS NewPatientID;
 END;
 GO
-SELECT 'Patients' AS TableName,COUNT(*) AS RowCount FROM dbo.Patients
+SELECT 'Patients' AS TableName,COUNT(*) AS [RowCount] FROM dbo.Patients
 UNION ALL SELECT 'Staff_Table',COUNT(*) FROM dbo.Staff_Table
 UNION ALL SELECT 'Disease_Table',COUNT(*) FROM dbo.Disease_Table
 UNION ALL SELECT 'Consultations',COUNT(*) FROM dbo.Consultations;
