@@ -7,7 +7,6 @@ I built this project to show how I can take a healthcare reporting problem, mode
 ![Power BI dashboard preview](Screenshot%202025-11-20%20105745.png)
 
 ## Why I built it
-
 I wanted to answer a practical public-health reporting problem. A healthcare organisation needs a reliable way to connect patient information, disease categories, staff assignments, admissions and costs. I created this warehouse to make those relationships queryable and to give a reporting user a clear view of activity, cost and trends.
 
 ## What I built
