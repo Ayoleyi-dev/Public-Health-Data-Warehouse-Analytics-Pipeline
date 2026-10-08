@@ -1,6 +1,6 @@
 # Case study: how I built my public-health analytics warehouse
 
-## The problem I chose
+## The problem I chose and why
 
 I wanted to demonstrate more than isolated SQL queries or a static chart. I chose a public-health reporting scenario because it connects directly to my Biochemistry background and my interest in healthcare data. I needed a model that could answer operational questions about patients, diseases, staff, admissions, length of stay and recorded cost.
 
