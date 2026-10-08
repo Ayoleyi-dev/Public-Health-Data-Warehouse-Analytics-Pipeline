@@ -1,0 +1,46 @@
+name: Healthcare pipeline validation
+on:
+  push:
+    branches: [main, 'portfolio/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: I test my portable pipeline and checked-in artifacts
+        run: python -m unittest discover -s tests -v
+      - name: I start an isolated SQL Server instance
+        shell: bash
+        run: |
+          pw="Aa1!$(openssl rand -hex 18)"
+          echo "::add-mask::$pw"
+          echo "SQLCMDPASSWORD=$pw" >> "$GITHUB_ENV"
+          docker run -d --name healthcare-sql -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD="$pw" mcr.microsoft.com/mssql/server:2022-latest
+          for attempt in {1..60}; do
+            if docker exec -e SQLCMDPASSWORD="$pw" healthcare-sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q 'SELECT 1' >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          docker logs healthcare-sql
+          exit 1
+      - name: I build twice and test SQL Server results
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_sql() { docker exec -i -e SQLCMDPASSWORD healthcare-sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b; }
+          run_sql < healthcare_pipeline_v2.sql
+          run_sql < tests/sql_server_checks.sql
+          run_sql < healthcare_pipeline_v2.sql
+          run_sql < tests/sql_server_checks.sql
+      - name: I record the tested engine version
+        run: docker exec -e SQLCMDPASSWORD healthcare-sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q 'SELECT @@VERSION'
+      - name: I remove the temporary SQL Server container
+        if: always()
+        run: docker rm -f healthcare-sql || true

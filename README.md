@@ -1,126 +1,118 @@
- Public Health Data Warehouse & Analytics Pipeline 🏥
+# Public Health Data Warehouse & Analytics Pipeline
 
-<img width="1050" height="540" alt="image" src="https://github.com/user-attachments/assets/85fab478-9019-4bf0-ac72-14e234a610c5" />
+I built this project to show how I can take a healthcare reporting problem, model the data in SQL Server, validate the records and present the results in Power BI. I used synthetic records for patients, staff, diseases and consultations so I could demonstrate the workflow without exposing real patient information.
 
+> **Data notice:** I generated every patient, staff, disease and consultation record in this repository for demonstration. The data does not represent real patients or clinical outcomes.
 
-## 📋 Table of Contents
-- [Executive Summary](#executive-summary)
-- [Business Problem](#business-problem)
-- [Solution Architecture](#solution-architecture)
-- [Data Engineering Logic](#data-engineering-logic)
-- [Key Insights & Visualizations](#key-insights--visualizations)
-- [Biochemistry Context](#biochemistry-context)
-- [Setup & Usage](#setup--usage)
+![Power BI dashboard preview](Screenshot%202025-11-20%20105745.png)
 
------
+## Why I built it
 
-## Executive Summary
+I wanted to answer a practical public-health reporting problem. A healthcare organisation needs a reliable way to connect patient information, disease categories, staff assignments, admissions and costs. I created this warehouse to make those relationships queryable and to give a reporting user a clear view of activity, cost and trends.
 
-This project demonstrates the design and implementation of a full-stack data analytics solution for a high-volume healthcare environment. By simulating a clinical dataset of 200+ patient records, I built a robust **Star Schema** data warehouse in **SQL Server** and connected it to **Power BI** for real-time disease tracking and financial reporting.
+## What I built
 
-**Key Achievement:** Identified **Influenza** as the primary revenue driver (due to volume) and detected a correlation between **Patient Age** and **Case Severity**.
+- I designed a relational model with one consultation fact table and three reference tables.
+- I generated a repeatable synthetic dataset with T-SQL.
+- I added primary keys, foreign keys, uniqueness rules, range checks and date checks.
+- I wrote data-quality queries for nulls, duplicate emails, orphan records, invalid dates and invalid ranges.
+- I created a financial reporting view for disease-level consultation volume, cost and average stay.
+- I added a validated patient-intake stored procedure.
+- I connected the model to a Power BI dashboard for KPI and trend reporting.
 
------
+## Architecture
 
-## Business Problem
-
-A mock public health institution needed a centralized system to:
-
-1.  Track patient demographics, diagnoses, and hospital admissions.
-2.  Analyze financial performance across different disease categories.
-3.  Monitor public health trends (outbreaks, seasonality, and severity) to optimize resource allocation.
-
------
-
-## Solution Architecture
-
-I designed a relational database using the **Star Schema** methodology to ensure query efficiency and referential integrity.
-
-### 🛠️ Tech Stack
-
-  * **Database:** Microsoft SQL Server (T-SQL)
-  * **ETL & Scripting:** Stored Procedures, Dynamic SQL
-  * **Visualization:** Power BI Desktop
-  * **Version Control:** Git & GitHub
-
-### 🗺️ Entity Relationship Diagram (ERD)
-
-<img width="965" height="551" alt="image" src="https://github.com/user-attachments/assets/153f74de-5470-46fb-8e5b-2c1d9af74a51" />
-
-
-  * **Fact Table:** `Consultations` (Transactions, Costs, Dates)
-  * **Dimension Tables:** `Patients`, `Staff`, `Diseases`
-
------
-
-## Data Engineering Logic
-
-To stress-test the database, I developed custom T-SQL scripts to generate realistic synthetic data.
-
-**1. Automated Patient Intake Tool (`sp_AdmitPatient`)**
-I built a Stored Procedure to standardize data entry, preventing human error and ensuring data types (like `DECIMAL` for weight) are strictly enforced.
-
-**2. Dynamic Data Generation (ETL)**
-Instead of static inserts, I used SQL loops and randomization functions to populate the warehouse:
-
-  * **Randomization:** Used `FLOOR(RAND(CHECKSUM(NEWID())))` to generate varied age and weight distributions.
-  * **Logic:** Used `CHOOSE()` to randomly assign names and cities from a predefined list, simulating diverse patient demographics.
-  * **Data Cleaning:** Implemented `UPDATE` scripts to handle null values and backfill missing demographic data for legacy records.
-### 🔧 Challenges & Resolutions
-**Issue:** The synthetic data generator initially created null values due to an index mismatch in the `CHOOSE()` function.
-**Resolution:** I implemented a dynamic sizing logic to ensure the random index always matched the array length.
-
-**Code Snippet (Data Generation Logic):**
-```sql
--- Dynamic Patient Generation Loop
-WHILE @Counter <= 100
-BEGIN
-    INSERT INTO Patients ([Age], [Weight])
-    VALUES (
-        FLOOR(RAND(CHECKSUM(NEWID())) * 85) + 1, -- Generates Age 1-85
-        CAST((RAND(CHECKSUM(NEWID())) * 68) + 2 AS DECIMAL(5,2)) -- Generates Weight
-    );
-    SET @Counter = @Counter + 1;
-END;
------
+```text
+Patients ───────┐
+                ├──> Consultations <── Staff_Table
+Disease_Table ──┘
+                         │
+                         └──> Power BI dashboard
 ```
-## Key Insights & Visualizations
 
-**Dashboard Tool:** Power BI
+I use `Consultations` as the fact table. I use `Patients`, `Staff_Table` and `Disease_Table` as reference dimensions. I record admission dates, discharge dates, disease categories, assigned staff and consultation cost in the fact table.
 
-**1. Financial Analysis**
+| Layer | What I implemented | Why I included it |
+|---|---|---|
+| Data generation | T-SQL synthetic records | I can recreate the same development dataset |
+| Warehouse | SQL Server tables and foreign keys | I can query structured and related records |
+| Quality layer | SQL checks and a reporting view | I can detect bad records before reporting |
+| Reporting | Power BI Desktop | I can communicate KPIs and trends visually |
 
-  * **Finding:** While **Cholera** and **Lassa Fever** are "Critical" and expensive to treat, **Influenza** generates the highest total revenue due to a 3x higher admission rate.
-  * **Action:** Hospital resources should be optimized for high-turnover, low-severity cases during peak flu seasons.
+## Repository guide
 
-**2. Public Health Trends**
+| File | What I use it for |
+|---|---|
+| `healthcare_pipeline_v2.sql` | I use this as the clean SQL Server build and seed script |
+| `healthcare-script.sql` | I retain this as my original exploratory script |
+| `DATA_DICTIONARY.md` | I document my tables, columns and metrics here |
+| `VALIDATION_CHECKS.md` | I document the quality checks I run here |
+| `CASE_STUDY.md` | I explain my problem, process, findings and decisions here |
+| `HEALTHCARE ANALYSIS ISUALIZATION.pbix` | I use this Power BI report for visual analysis |
+| `Screenshot 2025-11-20 105745.png` | I use this as the dashboard preview |
+| `Screenshot 2025-11-20 105851.png` | I use this as the relationship diagram |
 
-  * **Finding:** **January** showed a spike in admissions (Seasonality), suggesting a post-holiday surge in viral transmissions.
-  * **Finding:** Average patient age increases with disease severity (Critical cases are skewed towards 60+ years old), highlighting the need for specialized geriatric care units.
+## Questions I answer
 
------
+With this model and dashboard, I answer questions such as:
 
-## Biochemistry Context
+1. How many consultations did I record, and what was the total cost?
+2. Which disease categories produced the greatest consultation volume and recorded cost?
+3. How did average length of stay vary across disease categories and severity levels?
+4. How did admissions change across months and pathogen categories?
+5. Did I have incomplete, invalid or referentially inconsistent records before reporting?
 
-As a Biochemistry undergraduate, I designed this system to mirror the architecture used in **Bioinformatics LIMS (Laboratory Information Management Systems)**. The logic remains identical, mapping clinical entities to biological ones:
+In my current synthetic dashboard, I display 200 consultations and approximately ₦6.28 million in recorded consultation cost. I treat these as generated demonstration figures rather than real public-health statistics.
 
-| Hospital Entity (Business) | Bioinformatics Entity (Science) | Purpose |
-| :--- | :--- | :--- |
-| **`Patients` Table** | **`Samples` Table** | Tracks the unique biological source (e.g., Cell Line, Tissue ID). |
-| **`Staff` Table** | **`Researchers` Table** | Tracks the PI or Lab Technician responsible for the assay. |
-| **`Diseases` Table** | **`Gene Variants` Table** | Stores reference data (e.g., Gene Name, Chromosome Location). |
-| **`Consultations` Table** | **`Assays` Table** | The central fact table recording experimental results and quality metrics. |
+## How I run the project
 
------
+### Requirements I use
 
-## Setup & Usage
+- SQL Server or SQL Server Express
+- SQL Server Management Studio or Azure Data Studio
+- Power BI Desktop for the dashboard
 
-To run this project locally:
+### My setup process
 
-1.  **Clone the repo:** `git clone https://github.com/YourUsername/Healthcare-Analytics.git`
-2.  **Initialize Database:** Open `Healthcare_Script.sql` in SSMS and execute the setup script to create the schema and populate the data.
-3.  **Launch Dashboard:** Open `Healthcare_Dashboard.pbix` in Power BI Desktop.
-4.  **Connect:** Update the Data Source settings in Power BI to point to your local SQL Server instance (`localhost`).
+1. I create an empty database named `HEALTHCARE ANALYSIS REPORT`.
+2. I open `healthcare_pipeline_v2.sql` in SSMS and run it against that database.
+3. I run the queries in `VALIDATION_CHECKS.md` and confirm that the exception queries return no rows.
+4. I open the PBIX file in Power BI Desktop.
+5. I update the SQL Server data source to my local instance and refresh the report when Power BI requests a connection.
 
------
+I use the build script only for synthetic development data because it clears and reseeds the four project tables.
 
+## How I connect it to my degree
+
+As a Biochemistry undergraduate, I designed this project around the same data relationships that appear in laboratory information systems. I can map the healthcare entities to laboratory and computational biology entities:
+
+| Healthcare model | Laboratory or computational analogue |
+|---|---|
+| `Patients` | Samples or biological sources |
+| `Staff_Table` | Analysts, researchers or laboratory technicians |
+| `Disease_Table` | Targets, biomarkers or variant categories |
+| `Consultations` | Assays, runs or sample-level measurements |
+
+This connection helps me present a credible route into healthcare analytics, LIMS reporting and biomedical data work. I combine domain knowledge from biochemistry with SQL, data-quality controls and dashboard development.
+
+## Limitations I documented
+
+- I generated the records synthetically for demonstration.
+- I have not added a full date dimension or clinical outcomes yet.
+- I treat the PBIX file as a desktop reporting artifact; the SQL and documentation contain the reproducible workflow.
+- I have not executed SQL Server or Power BI inside this workspace, so I have verified the SQL structure and logic here and left application execution for a SQL Server environment.
+
+## Improvements I plan to make next
+
+- I plan to add a proper date dimension and reusable calendar measures.
+- I plan to add PostgreSQL-compatible pipeline code for junior data-engineering roles.
+- I plan to add automated SQL checks in continuous integration.
+- I plan to document the Power BI semantic model and refresh process in more detail.
+
+## About me
+
+I am **Ayoleyi Gbenga-Ayodeji Marvelous**, a Biochemistry undergraduate, Data & Analytics Officer and aspiring healthcare data professional.
+
+- Portfolio: <https://ayoleyi-portfolio.vercel.app/>
+- GitHub: <https://github.com/Ayoleyi-dev>
+- LinkedIn: <https://www.linkedin.com/in/ayoleyi-gbenga-ayodeji-aa99b6395>
